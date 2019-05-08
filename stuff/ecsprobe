@@ -14,12 +14,12 @@ DestinIP=$3
 
 if [[ "${tenant-env}" == "cp-prod" ]]; then
 	export profile="cinepax"
-	export BastionIP="34.244.0.42" # 10.0.22.90
+	export BastionIP="" # 
 fi
 
 if [[ "${tenant-env}" == "sp-prod" ]]; then
 	export profile="starzplay"
-	export BastionIP="10.0.0.147" #"52.208.118.5"
+	export export BastionIP="" # 
 fi
 
 
@@ -30,17 +30,17 @@ fi
 
 if [[ "${tenant-env}" == "sp-dev" ]]; then
 	export profile="starzplay"
-	export BastionIP="10.0.10.131" # "34.255.99.116"
+	export BastionIP="" # 
 fi
 
 if [[ "${tenant-env}" == "cp-stg" ]]; then
 	export profile="cinepax"
-	export BastionIP="34.244.0.42" # 10.0.22.90
+	export BastionIP="" # 
 fi
 
 if [[ "${tenant-env}" == "sp-stg" ]]; then
 	export profile="starzplay"
-	export BastionIP="10.0.0.147" #"52.208.118.5"
+	export BastionIP="" # 
 fi
 
 
@@ -83,7 +83,6 @@ connect () {
 	read -p "Enter Service Name to Connect: " servicename
 	DestinationIP=`ecsq --profile=$profile task $clustername $servicename | grep -i IP | awk '{ print $7 }'`
 	echo "DestinationIP is - $DestinationIP -"
-	# example ## ssh -tt -i $KEY ec2-user@34.244.0.42 ssh -tt -i $KEY ec2-user@10.0.28.171
 	ssh -tt -o StrictHostKeyChecking=no -i $KEY $SSHUSER@$BastionIP ssh -tt -o StrictHostKeyChecking=no -i $KEY $SSHUSER@$DestinationIP
 
 }
@@ -91,7 +90,6 @@ connect () {
 
 login () {
 	#commands
-	# example ## ssh -tt -i $KEY ec2-user@34.244.0.42 ssh -tt -i $KEY ec2-user@10.0.28.171
 	ssh -tt -o StrictHostKeyChecking=no -i $KEY $SSHUSER@$BastionIP ssh -tt -o StrictHostKeyChecking=no -i $KEY $SSHUSER@$DestinIP
 
 }
