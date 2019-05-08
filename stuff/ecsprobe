@@ -1,0 +1,119 @@
+#!/bin/bash
+# Author: Prasanjit Singh
+# ECS tool in the spirit of ecs-cli with a tunnel:)
+#\................................................./#
+
+
+#VARS
+WORKDIR="/stuff/"
+KEY=".ssh/devops.pem"
+SSHUSER="ec2-user"
+tenant=$1
+function=$2
+DestinIP=$3
+
+if [[ "${tenant-env}" == "cp-prod" ]]; then
+	export profile="cinepax"
+	export BastionIP="34.244.0.42" # 10.0.22.90
+fi
+
+if [[ "${tenant-env}" == "sp-prod" ]]; then
+	export profile="starzplay"
+	export BastionIP="10.0.0.147" #"52.208.118.5"
+fi
+
+
+if [[ "${tenant-env}" == "cp-dev" ]]; then
+	export profile="cinepax"
+	export BastionIP="34.244.0.42" # 10.0.22.90
+fi
+
+if [[ "${tenant-env}" == "sp-dev" ]]; then
+	export profile="starzplay"
+	export BastionIP="10.0.10.131" # "34.255.99.116"
+fi
+
+if [[ "${tenant-env}" == "cp-stg" ]]; then
+	export profile="cinepax"
+	export BastionIP="34.244.0.42" # 10.0.22.90
+fi
+
+if [[ "${tenant-env}" == "sp-stg" ]]; then
+	export profile="starzplay"
+	export BastionIP="10.0.0.147" #"52.208.118.5"
+fi
+
+
+
+##FUNCTIONS
+
+help () {
+	#commands
+	echo "This script must be run in the following pattern:"
+	echo -e "\nUsage:\necsprobe <tenant-env> <function>\n"
+	echo -e "\nExample:\necsprobe cp-prod status\n"
+	echo -e "\nExample:\necsprobe sp-prod connect\n"
+	echo -e "Also, you can login directly if you have DestinationIP"
+	echo -e "\nExample:\necsprobe sp-prod login 10.0.28.171\n"
+	exit 0
+}
+
+status () {
+
+
+	#commands
+	ecsq --profile=$profile clusters
+	read -p "Enter Cluster Name to View Services: " clustername
+	ecsq --profile=$profile services $clustername
+	echo ""
+	echo -e "\n....................................................................\n"
+	echo -e "\nconnect (when you DONT have DestinationIP)"
+	echo -e "Example:\necsprobe sp-prod connect\n"
+	echo -e "Or, you can login directly if you have DestinationIP"
+	echo -e "\nExample:\necsprobe sp-prod login 10.0.28.171\n"
+	echo -e "\nNote:\nUse ecsq command for more information on the clusters & tasks\n"
+}
+
+connect () {
+	#commands
+
+	ecsq --profile=$profile clusters
+	read -p "Enter Cluster Name to View Services: " clustername
+	ecsq --profile=$profile services $clustername
+	read -p "Enter Service Name to Connect: " servicename
+	DestinationIP=`ecsq --profile=$profile task $clustername $servicename | grep -i IP | awk '{ print $7 }'`
+	echo "DestinationIP is - $DestinationIP -"
+	# example ## ssh -tt -i $KEY ec2-user@34.244.0.42 ssh -tt -i $KEY ec2-user@10.0.28.171
+	ssh -tt -o StrictHostKeyChecking=no -i $KEY $SSHUSER@$BastionIP ssh -tt -o StrictHostKeyChecking=no -i $KEY $SSHUSER@$DestinationIP
+
+}
+
+
+login () {
+	#commands
+	# example ## ssh -tt -i $KEY ec2-user@34.244.0.42 ssh -tt -i $KEY ec2-user@10.0.28.171
+	ssh -tt -o StrictHostKeyChecking=no -i $KEY $SSHUSER@$BastionIP ssh -tt -o StrictHostKeyChecking=no -i $KEY $SSHUSER@$DestinIP
+
+}
+
+
+#EXECUTION
+cd $WORKDIR
+
+if [  $# -lt 2 ]
+then
+	help
+	exit 1
+fi
+
+if [[ "$2" == "connect" ]]; then
+	connect
+fi
+
+if [[ "$2" == "status" ]]; then
+	status
+fi
+
+if [[ "$2" == "login" ]]; then
+	login
+fi

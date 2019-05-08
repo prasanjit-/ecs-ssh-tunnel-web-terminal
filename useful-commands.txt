@@ -1,0 +1,4 @@
+##START
+docker run --name butterfly -d -v `pwd`/stuff:/stuff -p 8888:8888 aws-butterfly
+##STOP
+docker rm -f butterfly
